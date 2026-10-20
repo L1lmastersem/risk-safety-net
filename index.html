@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Daily Risk Safety Net · Sem Pater</title>
+<title>Trading Research · Sem Pater</title>
+<meta name="description" content="86 trading strategies backtested against one fixed standard, and a tool that checks combined daily risk across strategies.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,119 +17,175 @@
   <a class="back" href="https://github.com/L1lmastersem">← Sem Pater</a>
 
   <header>
-    <p class="eyebrow">Combined-portfolio risk check</p>
-    <h1>Daily Risk Safety Net</h1>
-    <p class="lede">A trading strategy can look safe on each chart separately and still break an account's daily loss limit when several symbols lose on the same day. Upload exported trade lists from TradingView, or try the sample data, to see the real combined worst day and what a two-layer safety net does to it. Everything runs in your browser; nothing is uploaded.</p>
+    <p class="eyebrow">Trading research · side project</p>
+    <h1>Trading Research</h1>
+    <p class="lede">Most trading strategies online come with impressive backtests. I rebuilt them in TradingView (Pine Script) and Python, tested every one against the same fixed rules, and built a tool to check what happens when several strategies share one account.</p>
   </header>
 
-  <section>
-    <p class="section-title">Account rules</p>
-    <div class="panel">
-      <div class="preset-row" id="presetRow"></div>
-      <div class="field-grid">
-        <div class="field">
-          <label for="accSize">Account size ($)</label>
-          <input type="number" id="accSize" value="100000" min="1" step="1000">
-        </div>
-        <div class="field">
-          <label for="dailyLimit">Daily loss limit ($)</label>
-          <input type="number" id="dailyLimit" value="3000" min="1" step="10">
-        </div>
-        <div class="field">
-          <label for="ddLimit">Max drawdown limit ($)</label>
-          <input type="number" id="ddLimit" value="6000" min="1" step="10">
-        </div>
-        <div class="field">
-          <label for="ddType">Drawdown type</label>
-          <select id="ddType">
-            <option value="static">Static (from start balance)</option>
-            <option value="trailing">Trailing (from equity peak)</option>
-          </select>
-        </div>
-      </div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-scorecard" aria-controls="scorecard" data-tab="scorecard">Strategy Scorecard</button>
+    <button class="tab" role="tab" id="tab-safety-net" aria-controls="safety-net" data-tab="safety-net">Risk Safety Net <span class="tab-badge">try it</span></button>
+  </nav>
 
-      <div class="net-row">
-        <span class="toggle-label">
-          <button class="toggle on" id="netToggle" aria-label="Enable safety net"></button>
-          Apply daily risk safety net
-        </span>
-        <div class="net-fields">
+  <div class="tab-panel" role="tabpanel" id="scorecard" aria-labelledby="tab-scorecard">
+    <p class="panel-intro">86 strategies, one testing standard. Below is a selection of the results, including the failures, because those taught me the most.</p>
+
+    <section class="stats" aria-label="Summary">
+      <div class="stat">
+        <span class="stat-num">86</span>
+        <span class="stat-label">strategies tested in detail</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num pass">3</span>
+        <span class="stat-label">passed every rule</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">3</span>
+        <span class="stat-label">markets: crypto, index futures and gold</span>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">The testing standard</h2>
+      <ol class="rules">
+        <li><strong>No lookahead.</strong> Higher-timeframe data is only read from candles that have already closed. A backtest that knows the future always looks great.</li>
+        <li><strong>Real costs.</strong> Exchange fees, overnight fees and slippage are always on. Results without fees don't count.</li>
+        <li><strong>Rules fixed before the run.</strong> Pass and fail criteria are written down first, and settings don't change after seeing the result.</li>
+        <li><strong>Enough trades, in both halves.</strong> A result needs a real sample, and the first and second half of the data both have to hold up.</li>
+        <li><strong>A second market.</strong> Where possible, the same settings have to work on a symbol the strategy wasn't picked on.</li>
+      </ol>
+    </section>
+
+    <section>
+      <div class="table-head">
+        <h2 class="section-title">Selected results</h2>
+        <div class="filters" id="filters" role="group" aria-label="Filter by verdict"></div>
+      </div>
+      <p class="pf-note"><abbr title="Gross profit divided by gross loss">PF</abbr> = profit factor: gross profit ÷ gross loss. Above 1 makes money, below 1 loses it. The bar to pass was 1.3 after costs.</p>
+      <div class="results" id="results"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">What I learned</h2>
+      <div class="lessons" id="lessons"></div>
+    </section>
+  </div>
+
+  <div class="tab-panel" role="tabpanel" id="safety-net" aria-labelledby="tab-safety-net" hidden>
+    <p class="panel-intro">A strategy can look safe on each chart separately and still break an account's daily loss limit when several symbols lose on the same day. Upload exported trade lists from TradingView, or try the sample data, to see the real combined worst day and what a two-layer safety net does to it. Everything runs in your browser; nothing is uploaded.</p>
+
+    <section>
+      <p class="section-title">Account rules</p>
+      <div class="panel">
+        <div class="preset-row" id="presetRow"></div>
+        <div class="field-grid">
           <div class="field">
-            <label for="headroom">Layer 1 headroom (%)</label>
-            <input type="number" id="headroom" value="90" min="10" max="100">
+            <label for="accSize">Account size ($)</label>
+            <input type="number" id="accSize" value="100000" min="1" step="1000">
           </div>
           <div class="field">
-            <label for="hardCap">Layer 2 max/trade (%)</label>
-            <input type="number" id="hardCap" value="60" min="10" max="100">
+            <label for="dailyLimit">Daily loss limit ($)</label>
+            <input type="number" id="dailyLimit" value="3000" min="1" step="10">
+          </div>
+          <div class="field">
+            <label for="ddLimit">Max drawdown limit ($)</label>
+            <input type="number" id="ddLimit" value="6000" min="1" step="10">
+          </div>
+          <div class="field">
+            <label for="ddType">Drawdown type</label>
+            <select id="ddType">
+              <option value="static">Static (from start balance)</option>
+              <option value="trailing">Trailing (from equity peak)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="net-row">
+          <span class="toggle-label">
+            <button class="toggle on" id="netToggle" aria-label="Enable safety net"></button>
+            Apply daily risk safety net
+          </span>
+          <div class="net-fields">
+            <div class="field">
+              <label for="headroom">Layer 1 headroom (%)</label>
+              <input type="number" id="headroom" value="90" min="10" max="100">
+            </div>
+            <div class="field">
+              <label for="hardCap">Layer 2 max/trade (%)</label>
+              <input type="number" id="hardCap" value="60" min="10" max="100">
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section>
-    <p class="section-title">Trade data</p>
-    <div class="panel">
-      <div class="dropzone" id="dropzone">
-        <p class="dropzone-title">Drop trade CSVs here</p>
-        <p class="dropzone-sub">or click to browse. Export from the TradingView Strategy Tester trade list, one file per symbol.</p>
-        <input type="file" id="fileInput" accept=".csv" multiple>
+    <section>
+      <p class="section-title">Trade data</p>
+      <div class="panel">
+        <div class="dropzone" id="dropzone">
+          <p class="dropzone-title">Drop trade CSVs here</p>
+          <p class="dropzone-sub">or click to browse. Export from the TradingView Strategy Tester trade list, one file per symbol.</p>
+          <input type="file" id="fileInput" accept=".csv" multiple>
+        </div>
+        <div class="sample-row">
+          <span>No CSVs at hand?</span>
+          <button class="sample-btn" id="sampleBtn">Try with sample data</button>
+        </div>
+        <div class="file-list" id="fileList"></div>
+        <div class="error-msg" id="errorMsg" style="display:none;"></div>
+        <button class="run-btn" id="runBtn" disabled>Add at least one CSV to run</button>
       </div>
-      <div class="sample-row">
-        <span>No CSVs at hand?</span>
-        <button class="sample-btn" id="sampleBtn">Try with sample data</button>
+    </section>
+
+    <section id="resultsSection" style="display:none;">
+      <p class="section-title">Results</p>
+
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-head baseline">Baseline: no safety net</div>
+          <div id="baselineMetrics"></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-head net">With safety net</div>
+          <div id="netMetrics"></div>
+        </div>
       </div>
-      <div class="file-list" id="fileList"></div>
-      <div class="error-msg" id="errorMsg" style="display:none;"></div>
-      <button class="run-btn" id="runBtn" disabled>Add at least one CSV to run</button>
-    </div>
-  </section>
 
-  <section id="resultsSection" style="display:none;">
-    <p class="section-title">Results</p>
-
-    <div class="compare-grid">
-      <div class="compare-col">
-        <div class="compare-head baseline">Baseline: no safety net</div>
-        <div id="baselineMetrics"></div>
+      <div class="payoff">
+        <p class="payoff-label">Worst single day, before and after</p>
+        <div class="payoff-transition">
+          <span class="payoff-num before" id="worstBefore">—</span>
+          <span class="payoff-arrow">→</span>
+          <span class="payoff-num after" id="worstAfter">—</span>
+        </div>
+        <p class="payoff-note" id="payoffNote"></p>
       </div>
-      <div class="compare-col">
-        <div class="compare-head net">With safety net</div>
-        <div id="netMetrics"></div>
+
+      <div class="chart-wrap">
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--text-faint)"></span>Baseline equity</span>
+          <span><span class="legend-dot" style="background:var(--accent)"></span>With safety net</span>
+        </div>
+        <svg class="chart" id="equityChart" viewBox="0 0 960 320" preserveAspectRatio="none" role="img" aria-label="Equity curve, baseline versus with safety net"></svg>
       </div>
-    </div>
 
-    <div class="payoff">
-      <p class="payoff-label">Worst single day, before and after</p>
-      <div class="payoff-transition">
-        <span class="payoff-num before" id="worstBefore">—</span>
-        <span class="payoff-arrow">→</span>
-        <span class="payoff-num after" id="worstAfter">—</span>
+      <div class="caveat">
+        <p><strong>How the safety net works:</strong> Layer 1 shrinks each new trade as the day's combined loss grows, so its worst case can't push the day past the limit. Layer 2 caps any single trade at a fixed share of the daily limit, which catches one oversized first trade of the day.</p>
+        <p><strong>How risk per trade is estimated:</strong> a trade export has each trade's outcome but not its original stop distance. The tool uses a losing trade's loss directly and half a winning trade's gain as a rough stand-in. Treat results as directionally correct, not exact to the dollar.</p>
+        <p id="sampleNote" style="display:none;"><strong>Sample data:</strong> two made-up symbols over one year of trading days, generated in the browser. It is not real trading data.</p>
       </div>
-      <p class="payoff-note" id="payoffNote"></p>
-    </div>
+    </section>
 
-    <div class="chart-wrap">
-      <div class="chart-legend">
-        <span><span class="legend-dot" style="background:var(--text-faint)"></span>Baseline equity</span>
-        <span><span class="legend-dot" style="background:var(--accent)"></span>With safety net</span>
-      </div>
-      <svg class="chart" id="equityChart" viewBox="0 0 960 320" preserveAspectRatio="none" role="img" aria-label="Equity curve, baseline versus with safety net"></svg>
-    </div>
+    <section id="emptyState">
+      <div class="empty-state">Upload trade CSVs or load the sample data to see the combined risk picture.</div>
+    </section>
+  </div>
 
-    <div class="caveat">
-      <p><strong>How the safety net works:</strong> Layer 1 shrinks each new trade as the day's combined loss grows, so its worst case can't push the day past the limit. Layer 2 caps any single trade at a fixed share of the daily limit, which catches one oversized first trade of the day.</p>
-      <p><strong>How risk per trade is estimated:</strong> a trade export has each trade's outcome but not its original stop distance. The tool uses a losing trade's loss directly and half a winning trade's gain as a rough stand-in. Treat results as directionally correct, not exact to the dollar.</p>
-      <p id="sampleNote" style="display:none;"><strong>Sample data:</strong> two made-up symbols over one year of trading days, generated in the browser. It is not real trading data.</p>
-    </div>
-  </section>
-
-  <section id="emptyState">
-    <div class="empty-state">Upload trade CSVs or load the sample data to see the combined risk picture.</div>
-  </section>
+  <footer class="footer">
+    <p>Backtests on historical data from Binance (crypto) and HistData (Nasdaq-100), mostly 2024–2026 unless noted otherwise. This is a research project, not financial advice.</p>
+  </footer>
 
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>

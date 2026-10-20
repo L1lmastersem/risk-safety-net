@@ -1,4 +1,224 @@
-// Daily Risk Safety Net · logic
+// Trading Research · scripts
+
+// Tabs: switch between the two sections, remember the choice in the URL (#scorecard / #safety-net)
+(function () {
+  "use strict";
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var ids = tabs.map(function (t) { return t.dataset.tab; });
+
+  function show(id, push) {
+    if (ids.indexOf(id) === -1) id = ids[0];
+    tabs.forEach(function (t) {
+      var on = t.dataset.tab === id;
+      t.setAttribute("aria-selected", on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.dataset.tab).hidden = !on;
+    });
+    if (push) history.replaceState(null, "", "#" + id);
+  }
+
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { show(t.dataset.tab, true); });
+    t.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      var next = tabs[(i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length];
+      show(next.dataset.tab, true);
+      next.focus();
+    });
+  });
+
+  window.addEventListener("hashchange", function () { show(location.hash.slice(1), false); });
+  show(location.hash.slice(1), false);
+})();
+
+
+// ---------- Strategy Scorecard ----------
+// A curated selection from the full scorecard (86 strategies). No dollar amounts on purpose.
+
+(function () {
+  "use strict";
+
+  var VERDICTS = {
+    pass:     { label: "Pass",     hint: "Met every pre-set rule" },
+    noedge:   { label: "No edge",  hint: "Honest code, but too thin or inconsistent to trust" },
+    fail:     { label: "Fail",     hint: "Missed one or more rules" },
+    artifact: { label: "Artifact", hint: "The result came from a backtest flaw, not the strategy" }
+  };
+
+  var RESULTS = [
+    {
+      name: "RSI(2) pullback, daily",
+      market: "Nasdaq-100, 2003–2026",
+      claim: "Textbook rule: buy when RSI(2) drops below 10 while price is above its 200-day average.",
+      result: "PF 2.45 on 209 trades, 18 of 24 years positive.",
+      verdict: "pass",
+      why: "An untuned rule that kept working years after it was published. It holds positions overnight, which is where the index earns most of its move."
+    },
+    {
+      name: "50-day trend following",
+      market: "BTC and ETH, daily, 2017–2026",
+      claim: "Hold while price is above its 50-day average, sit out below it.",
+      result: "Out of sample: BTC PF 4.7, ETH PF 3.4. BTC max drawdown −51% vs −83% for buy and hold.",
+      verdict: "pass",
+      why: "The first rule to hold up on years of data it was never fitted to. A few huge trades carry it, with a win rate around 21%."
+    },
+    {
+      name: "High funding rate → go long",
+      market: "11 crypto coins, daily, 2020–2026",
+      claim: "When traders pay a lot to stay long, momentum tends to continue.",
+      result: "PF 1.64 on 7 coins it was never tested on, profitable on 7 of 7.",
+      verdict: "pass",
+      why: "Passed a check I wrote down before running it. The edge is real but mostly comes from bull markets."
+    },
+    {
+      name: "Community strategy with PF 20",
+      market: "XRP, 15 min",
+      claim: "Profit factor 20.4, 78% win rate, 0.41% drawdown.",
+      result: "Not worth rerunning: it reads the future.",
+      verdict: "artifact",
+      why: "The code requested a higher-timeframe candle's close before that candle had finished. Combined with zero fees, that produced a too-good-to-be-true result."
+    },
+    {
+      name: "Opening range breakout, replicated",
+      market: "SOL and XRP, 15 min",
+      claim: "TradingView backtest on SOL: PF 1.50, 20 of 21 months positive.",
+      result: "Line-for-line Python port with real costs: SOL PF 1.13, XRP PF 1.01.",
+      verdict: "fail",
+      why: "The TradingView number had zero commission. Rebuilding it independently showed how much fees and data details matter."
+    },
+    {
+      name: "Initial balance fade",
+      market: "Nasdaq-100 and S&P 500, 15 min",
+      claim: "Fade breaks of the first trading hour's range.",
+      result: "After the fix: PF 1.00 on Nasdaq, 0.96 on S&P.",
+      verdict: "fail",
+      why: "An earlier promising result was caused by a one-hour timezone bug in summer data (daylight saving time). Fixing the bug removed the edge."
+    },
+    {
+      name: "4-hour fair value gap pullback",
+      market: "11 crypto coins, 15 min",
+      claim: "Buy the pullback to the middle of a 4-hour price gap, 2R target.",
+      result: "PF 1.22–1.28, positive on 10 of 11 coins, both halves positive on SOL, XRP and BTC.",
+      verdict: "noedge",
+      why: "The most consistent short-term result, but just under the 1.3 bar. Good candidate for a forward test, not for trading yet."
+    },
+    {
+      name: "Squeeze Momentum (LazyBear)",
+      market: "XRP, 15 min",
+      claim: "The most-liked indicator on TradingView, around 97K likes.",
+      result: "PF 0.61 on 2,352 trades. PF 0.89 even before fees.",
+      verdict: "fail",
+      why: "Squeeze releases did worse than random. Popularity says nothing about performance."
+    },
+    {
+      name: "ICT order block retest",
+      market: "XRP, 15 min",
+      claim: "After a break of structure, price returns to the last opposite candle and bounces.",
+      result: "PF 0.68 on 2,686 trades. 33.3% win rate, exactly breakeven for a 2R target before fees.",
+      verdict: "fail",
+      why: "A coin flip before costs. Tight stops meant fees took about 24% of each trade's risk."
+    },
+    {
+      name: "CME gap fill",
+      market: "11 crypto coins, 15 min",
+      claim: "Weekend gaps against the CME Friday close always get filled.",
+      result: "Gaps filled within a week only 48% of the time, on BTC only 36%. PF 1.02.",
+      verdict: "fail",
+      why: "A popular belief that turned out to be a coin flip, and weakest on BTC, where it's talked about most."
+    },
+    {
+      name: "Supertrend (10, 3)",
+      market: "XRP and SOL, 15 min",
+      claim: "Always-in trend follower that flips on each signal.",
+      result: "PF 1.05–1.06 before fees on both coins, 0.79–0.87 after.",
+      verdict: "fail",
+      why: "The only classic indicator with a real raw edge, but about 0.05% per trade can't cover a 0.12% round-trip fee."
+    },
+    {
+      name: "Keltner snapback (\"rubber band\")",
+      market: "Nasdaq-100 1 min and 11 crypto coins",
+      claim: "When price stretches far outside its band after a key level breaks, fade it.",
+      result: "Nasdaq PF 0.74, lost every year. Crypto PF 0.68, lost on 11 of 11 coins.",
+      verdict: "fail",
+      why: "Stretched moves keep going more often than they snap back. The more stretched, the worse fading does."
+    }
+  ];
+
+  var LESSONS = [
+    { title: "Too-good results are usually lookahead.", text: "A profit factor of 20 came from one line of code that read a candle's close before it happened." },
+    { title: "Zero-fee backtests mislead.", text: "Several strategies had a small real edge before costs that fees completely erased." },
+    { title: "Rebuild it to trust it.", text: "Porting a strategy line for line to Python, with real costs, gave a very different answer than the original backtest." },
+    { title: "Bugs can look like an edge.", text: "A one-hour timezone error in summer data created a result that disappeared once it was fixed." },
+    { title: "Popularity doesn't predict performance.", text: "The three most-liked TradingView scripts I tested all failed honestly." },
+    { title: "Removing bad trades afterwards proves nothing.", text: "Results that only look good after dropping the losers were chosen by their outcome, not by a rule." }
+  ];
+
+  var filtersEl = document.getElementById("filters");
+  var resultsEl = document.getElementById("results");
+  var lessonsEl = document.getElementById("lessons");
+  var active = "all";
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function countBy(verdict) {
+    return RESULTS.filter(function (r) { return r.verdict === verdict; }).length;
+  }
+
+  function renderFilters() {
+    var options = [{ key: "all", label: "All", count: RESULTS.length }];
+    Object.keys(VERDICTS).forEach(function (key) {
+      var n = countBy(key);
+      if (n > 0) options.push({ key: key, label: VERDICTS[key].label, count: n });
+    });
+    filtersEl.innerHTML = options.map(function (o) {
+      return '<button class="filter-btn' + (o.key === active ? " active" : "") + '" data-key="' + o.key + '" aria-pressed="' + (o.key === active) + '">' +
+        escapeHtml(o.label) + ' <span class="filter-count">' + o.count + "</span></button>";
+    }).join("");
+    filtersEl.querySelectorAll(".filter-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        active = btn.dataset.key;
+        renderFilters();
+        renderResults();
+      });
+    });
+  }
+
+  function renderResults() {
+    var rows = RESULTS.filter(function (r) { return active === "all" || r.verdict === active; });
+    resultsEl.innerHTML = rows.map(function (r) {
+      var v = VERDICTS[r.verdict];
+      return '<article class="result">' +
+        '<div class="result-top">' +
+          '<div><h3 class="result-name">' + escapeHtml(r.name) + '</h3>' +
+          '<p class="result-market">' + escapeHtml(r.market) + "</p></div>" +
+          '<span class="verdict ' + r.verdict + '" title="' + escapeHtml(v.hint) + '">' + escapeHtml(v.label) + "</span>" +
+        "</div>" +
+        '<dl class="result-body">' +
+          "<div><dt>Claim</dt><dd>" + escapeHtml(r.claim) + "</dd></div>" +
+          "<div><dt>Honest result</dt><dd class=\"mono\">" + escapeHtml(r.result) + "</dd></div>" +
+          "<div><dt>Why</dt><dd>" + escapeHtml(r.why) + "</dd></div>" +
+        "</dl>" +
+      "</article>";
+    }).join("");
+  }
+
+  function renderLessons() {
+    lessonsEl.innerHTML = LESSONS.map(function (l) {
+      return '<div class="lesson"><p><strong>' + escapeHtml(l.title) + "</strong> " + escapeHtml(l.text) + "</p></div>";
+    }).join("");
+  }
+
+  renderFilters();
+  renderResults();
+  renderLessons();
+})();
+
+
+// ---------- Risk Safety Net ----------
 
 (function(){
   "use strict";
