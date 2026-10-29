@@ -1,4 +1,4 @@
-// Trading Research · scripts
+// Trading research: tabs, scorecard and risk safety net
 
 // Tabs: switch between the two sections, remember the choice in the URL (#scorecard / #safety-net)
 (function () {
@@ -32,22 +32,23 @@
 })();
 
 
-// ---------- Strategy Scorecard ----------
-// A curated selection from the full scorecard (86 strategies). No dollar amounts on purpose.
+// ---------- Scorecard ----------
+// A selection from the full scorecard (86 strategies). No dollar amounts on purpose.
 
 (function () {
   "use strict";
 
   var VERDICTS = {
-    pass:     { label: "Pass",     hint: "Met every pre-set rule" },
+    pass:     { label: "Passed",   hint: "Met every pre-set rule" },
     noedge:   { label: "No edge",  hint: "Honest code, but too thin or inconsistent to trust" },
-    fail:     { label: "Fail",     hint: "Missed one or more rules" },
+    fail:     { label: "Failed",   hint: "Missed one or more rules" },
     artifact: { label: "Artifact", hint: "The result came from a backtest flaw, not the strategy" }
   };
 
   var RESULTS = [
     {
       name: "RSI(2) pullback, daily",
+      pf: 2.45, claimed: null, pfLabel: "PF 2.45",
       market: "Nasdaq-100, 2003–2026",
       claim: "Textbook rule: buy when RSI(2) drops below 10 while price is above its 200-day average.",
       result: "PF 2.45 on 209 trades, 18 of 24 years positive.",
@@ -56,6 +57,7 @@
     },
     {
       name: "50-day trend following",
+      pf: 4.7, claimed: null, pfLabel: "PF 4.7 (BTC)",
       market: "BTC and ETH, daily, 2017–2026",
       claim: "Hold while price is above its 50-day average, sit out below it.",
       result: "Out of sample: BTC PF 4.7, ETH PF 3.4. BTC max drawdown −51% vs −83% for buy and hold.",
@@ -63,7 +65,8 @@
       why: "The first rule to hold up on years of data it was never fitted to. A few huge trades carry it, with a win rate around 21%."
     },
     {
-      name: "High funding rate → go long",
+      name: "Going long when funding is high",
+      pf: 1.64, claimed: null, pfLabel: "PF 1.64",
       market: "11 crypto coins, daily, 2020–2026",
       claim: "When traders pay a lot to stay long, momentum tends to continue.",
       result: "PF 1.64 on 7 coins it was never tested on, profitable on 7 of 7.",
@@ -72,6 +75,7 @@
     },
     {
       name: "Community strategy with PF 20",
+      pf: null, claimed: 20.4, pfLabel: "claimed 20.4",
       market: "XRP, 15 min",
       claim: "Profit factor 20.4, 78% win rate, 0.41% drawdown.",
       result: "Not worth rerunning: it reads the future.",
@@ -80,6 +84,7 @@
     },
     {
       name: "Opening range breakout, replicated",
+      pf: 1.13, claimed: 1.50, pfLabel: "PF 1.13 (SOL)",
       market: "SOL and XRP, 15 min",
       claim: "TradingView backtest on SOL: PF 1.50, 20 of 21 months positive.",
       result: "Line-for-line Python port with real costs: SOL PF 1.13, XRP PF 1.01.",
@@ -88,6 +93,7 @@
     },
     {
       name: "Initial balance fade",
+      pf: 1.00, claimed: null, pfLabel: "PF 1.00",
       market: "Nasdaq-100 and S&P 500, 15 min",
       claim: "Fade breaks of the first trading hour's range.",
       result: "After the fix: PF 1.00 on Nasdaq, 0.96 on S&P.",
@@ -96,6 +102,7 @@
     },
     {
       name: "4-hour fair value gap pullback",
+      pf: 1.26, claimed: null, pfLabel: "PF 1.22–1.28",
       market: "11 crypto coins, 15 min",
       claim: "Buy the pullback to the middle of a 4-hour price gap, 2R target.",
       result: "PF 1.22–1.28, positive on 10 of 11 coins, both halves positive on SOL, XRP and BTC.",
@@ -104,6 +111,7 @@
     },
     {
       name: "Squeeze Momentum (LazyBear)",
+      pf: 0.61, claimed: null, pfLabel: "PF 0.61",
       market: "XRP, 15 min",
       claim: "The most-liked indicator on TradingView, around 97K likes.",
       result: "PF 0.61 on 2,352 trades. PF 0.89 even before fees.",
@@ -112,6 +120,7 @@
     },
     {
       name: "ICT order block retest",
+      pf: 0.68, claimed: null, pfLabel: "PF 0.68",
       market: "XRP, 15 min",
       claim: "After a break of structure, price returns to the last opposite candle and bounces.",
       result: "PF 0.68 on 2,686 trades. 33.3% win rate, exactly breakeven for a 2R target before fees.",
@@ -120,6 +129,7 @@
     },
     {
       name: "CME gap fill",
+      pf: 1.02, claimed: null, pfLabel: "PF 1.02",
       market: "11 crypto coins, 15 min",
       claim: "Weekend gaps against the CME Friday close always get filled.",
       result: "Gaps filled within a week only 48% of the time, on BTC only 36%. PF 1.02.",
@@ -128,6 +138,7 @@
     },
     {
       name: "Supertrend (10, 3)",
+      pf: 0.79, claimed: null, pfLabel: "PF 0.79 (XRP)",
       market: "XRP and SOL, 15 min",
       claim: "Always-in trend follower that flips on each signal.",
       result: "PF 1.05–1.06 before fees on both coins, 0.79–0.87 after.",
@@ -136,6 +147,7 @@
     },
     {
       name: "Keltner snapback (\"rubber band\")",
+      pf: 0.74, claimed: null, pfLabel: "PF 0.74 (Nasdaq)",
       market: "Nasdaq-100 1 min and 11 crypto coins",
       claim: "When price stretches far outside its band after a key level breaks, fade it.",
       result: "Nasdaq PF 0.74, lost every year. Crypto PF 0.68, lost on 11 of 11 coins.",
@@ -153,6 +165,7 @@
     { title: "Removing bad trades afterwards proves nothing.", text: "Results that only look good after dropping the losers were chosen by their outcome, not by a rule." }
   ];
 
+
   var filtersEl = document.getElementById("filters");
   var resultsEl = document.getElementById("results");
   var lessonsEl = document.getElementById("lessons");
@@ -164,19 +177,16 @@
     });
   }
 
-  function countBy(verdict) {
-    return RESULTS.filter(function (r) { return r.verdict === verdict; }).length;
-  }
-
   function renderFilters() {
     var options = [{ key: "all", label: "All", count: RESULTS.length }];
     Object.keys(VERDICTS).forEach(function (key) {
-      var n = countBy(key);
+      var n = RESULTS.filter(function (r) { return r.verdict === key; }).length;
       if (n > 0) options.push({ key: key, label: VERDICTS[key].label, count: n });
     });
     filtersEl.innerHTML = options.map(function (o) {
-      return '<button class="filter-btn' + (o.key === active ? " active" : "") + '" data-key="' + o.key + '" aria-pressed="' + (o.key === active) + '">' +
-        escapeHtml(o.label) + ' <span class="filter-count">' + o.count + "</span></button>";
+      var on = o.key === active;
+      return '<button class="filter-btn' + (on ? " active" : "") + '" data-key="' + o.key + '" aria-pressed="' + on + '">' +
+        escapeHtml(o.label) + ' <span class="filter-count">(' + o.count + ')</span></button>';
     }).join("");
     filtersEl.querySelectorAll(".filter-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -187,28 +197,62 @@
     });
   }
 
+  // Profit factor is a ratio, so the track uses a log scale: 0.5 and 2 sit equally far from 1.
+  var PF_MIN = 0.5, PF_MAX = 5, PASS_BAR = 1.3;
+  function pos(v) {
+    var c = Math.min(Math.max(v, PF_MIN), PF_MAX);
+    return Math.log(c / PF_MIN) / Math.log(PF_MAX / PF_MIN) * 100;
+  }
+
+  function track(r) {
+    var one = pos(1), html = "";
+    html += '<span class="tick-one" style="left:' + one.toFixed(2) + '%"></span>';
+    html += '<span class="tick-pass" style="left:' + pos(PASS_BAR).toFixed(2) + '%"></span>';
+    if (r.claimed) {
+      var from = r.pf ? pos(r.pf) : one;
+      var to = pos(r.claimed);
+      var clipped = r.claimed > PF_MAX;
+      html += '<span class="wick' + (clipped ? " clipped" : "") + '" style="left:' + from.toFixed(2) + '%;width:' + (to - from).toFixed(2) + '%"></span>';
+    }
+    if (r.pf) {
+      var p = pos(r.pf), left = Math.min(one, p), width = Math.max(Math.abs(p - one), 0.8);
+      html += '<span class="body ' + (r.pf >= 1 ? "up" : "down") + '" style="left:' + left.toFixed(2) + '%;width:' + width.toFixed(2) + '%"></span>';
+    }
+    return '<span class="track" aria-hidden="true">' + html + "</span>";
+  }
+
+  function axis() {
+    var ticks = [0.5, 1, 1.3, 2, 5];
+    return '<div class="axis" aria-hidden="true"><span></span><span class="axis-track">' +
+      ticks.map(function (t) {
+        return '<span class="axis-tick' + (t === PASS_BAR ? " pass" : "") + '" style="left:' + pos(t).toFixed(2) + '%">' + t + "</span>";
+      }).join("") + "</span><span></span><span></span></div>";
+  }
+
   function renderResults() {
     var rows = RESULTS.filter(function (r) { return active === "all" || r.verdict === active; });
-    resultsEl.innerHTML = rows.map(function (r) {
+    resultsEl.innerHTML = axis() + rows.map(function (r) {
       var v = VERDICTS[r.verdict];
-      return '<article class="result">' +
-        '<div class="result-top">' +
-          '<div><h3 class="result-name">' + escapeHtml(r.name) + '</h3>' +
-          '<p class="result-market">' + escapeHtml(r.market) + "</p></div>" +
+      return '<details class="result">' +
+        "<summary>" +
+          '<span class="result-id"><span class="result-name">' + escapeHtml(r.name) + "</span>" +
+          '<span class="result-market">' + escapeHtml(r.market) + "</span></span>" +
+          track(r) +
+          '<span class="result-pf">' + escapeHtml(r.pfLabel) + "</span>" +
           '<span class="verdict ' + r.verdict + '" title="' + escapeHtml(v.hint) + '">' + escapeHtml(v.label) + "</span>" +
+        "</summary>" +
+        '<div class="result-detail">' +
+          '<p><span class="label">The claim</span>' + escapeHtml(r.claim) + "</p>" +
+          '<p><span class="label">Tested honestly</span>' + escapeHtml(r.result) + "</p>" +
+          '<p><span class="label">What happened</span>' + escapeHtml(r.why) + "</p>" +
         "</div>" +
-        '<dl class="result-body">' +
-          "<div><dt>Claim</dt><dd>" + escapeHtml(r.claim) + "</dd></div>" +
-          "<div><dt>Honest result</dt><dd class=\"mono\">" + escapeHtml(r.result) + "</dd></div>" +
-          "<div><dt>Why</dt><dd>" + escapeHtml(r.why) + "</dd></div>" +
-        "</dl>" +
-      "</article>";
+      "</details>";
     }).join("");
   }
 
   function renderLessons() {
     lessonsEl.innerHTML = LESSONS.map(function (l) {
-      return '<div class="lesson"><p><strong>' + escapeHtml(l.title) + "</strong> " + escapeHtml(l.text) + "</p></div>";
+      return '<li><span class="lesson-title">' + escapeHtml(l.title) + "</span>" + escapeHtml(l.text) + "</li>";
     }).join("");
   }
 
@@ -218,7 +262,7 @@
 })();
 
 
-// ---------- Risk Safety Net ----------
+// ---------- Risk safety net ----------
 
 (function(){
   "use strict";
@@ -282,6 +326,7 @@
   els.netToggle.addEventListener('click', function(){
     netEnabled = !netEnabled;
     els.netToggle.classList.toggle('on', netEnabled);
+    els.netToggle.setAttribute('aria-checked', netEnabled);
   });
 
   // ---------- CSV parsing ----------
@@ -429,7 +474,7 @@
       var row = document.createElement('div');
       row.className = 'file-row';
       row.innerHTML = '<span class="file-name">' + escapeHtml(f.name) + '</span>' +
-        '<span><span class="file-meta">' + f.count + ' trades · ' + f.span + 'd · ' + fmtDate(f.first) + ' to ' + fmtDate(f.last) + '</span>' +
+        '<span><span class="file-meta">' + f.count + ' trades, ' + f.span + ' days, ' + fmtDate(f.first) + ' to ' + fmtDate(f.last) + '</span>' +
         '<button class="file-remove" data-idx="' + idx + '">remove</button></span>';
       els.fileList.appendChild(row);
     });
@@ -448,6 +493,9 @@
   function hideError() { els.errorMsg.style.display = 'none'; }
 
   els.dropzone.addEventListener('click', function(){ els.fileInput.click(); });
+  els.dropzone.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); els.fileInput.click(); }
+  });
   els.fileInput.addEventListener('change', function(e){
     Array.from(e.target.files).forEach(addFile);
     e.target.value = '';
@@ -522,7 +570,7 @@
   function riskPill(usedPct) {
     var cls = usedPct >= 100 ? 'danger' : usedPct >= 70 ? 'warn' : 'safe';
     var label = usedPct >= 100 ? 'breach' : usedPct >= 70 ? 'tight' : 'safe margin';
-    return '<span class="pill ' + cls + '">' + usedPct.toFixed(1) + '% of limit · ' + label + '</span>';
+    return '<span class="pill ' + cls + '">' + usedPct.toFixed(1) + '% of the limit, ' + label + '</span>';
   }
 
   function fmtMoney(v) {
@@ -546,7 +594,7 @@
 
   function metricRow(label, value, pill, sub) {
     return '<div class="metric-row"><span class="metric-label">' + label + '</span>' +
-      '<span class="metric-value">' + value + (pill ? '<br>' + pill : '') + (sub ? '<span class="metric-sub">' + sub + '</span>' : '') + '</span></div>';
+      '<span class="metric-value">' + value + (pill ? pill : '') + (sub ? '<span class="metric-sub">' + sub + '</span>' : '') + '</span></div>';
   }
 
   // ---------- Chart ----------
@@ -570,9 +618,9 @@
     }
 
     els.equityChart.innerHTML =
-      '<line x1="' + padL + '" y1="' + sy(baseCurve[0].y).toFixed(1) + '" x2="' + (w-padR) + '" y2="' + sy(baseCurve[0].y).toFixed(1) + '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3,3"/>' +
-      '<path d="' + toPath(baseCurve) + '" fill="none" stroke="var(--text-faint)" stroke-width="1.75" vector-effect="non-scaling-stroke"/>' +
-      '<path d="' + toPath(netCurve) + '" fill="none" stroke="var(--accent)" stroke-width="1.75" vector-effect="non-scaling-stroke"/>';
+      '<line x1="' + padL + '" y1="' + sy(baseCurve[0].y).toFixed(1) + '" x2="' + (w-padR) + '" y2="' + sy(baseCurve[0].y).toFixed(1) + '" stroke="var(--rule)" stroke-width="1" stroke-dasharray="3,3"/>' +
+      '<path d="' + toPath(baseCurve) + '" fill="none" stroke="var(--muted)" stroke-width="1.75" vector-effect="non-scaling-stroke"/>' +
+      '<path d="' + toPath(netCurve) + '" fill="none" stroke="var(--up)" stroke-width="1.75" vector-effect="non-scaling-stroke"/>';
   }
 
   // ---------- Run ----------
@@ -601,8 +649,8 @@
     els.worstAfter.textContent = fmtMoney(withNet.worstDayVal);
     var beforePct = Math.abs(baseline.worstDayVal)/account.daily*100;
     var afterPct = Math.abs(withNet.worstDayVal)/account.daily*100;
-    els.payoffNote.textContent = beforePct.toFixed(1) + '% of daily limit → ' + afterPct.toFixed(1) + '% of daily limit' +
-      (netEnabled ? '' : ' (safety net is off, so both sides show the same baseline)');
+    els.payoffNote.textContent = beforePct.toFixed(1) + '% of the daily limit without the safety net, ' + afterPct.toFixed(1) + '% with it' +
+      (netEnabled ? '' : '. The safety net is switched off, so both sides are the same.');
 
     renderChart(baseline.equityCurve, withNet.equityCurve);
 
