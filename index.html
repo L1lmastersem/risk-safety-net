@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Trading research by Sem Pater</title>
-<meta name="description" content="I backtested 86 trading strategies against the same rules. Three held up. Plus a tool that checks combined daily risk across strategies.">
+<meta name="description" content="I backtested 116 trading strategies against the same rules. Most fell apart; the gap pullback held up. Plus a tool that checks combined daily risk across strategies.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <div class="page">
 
-  <!-- Vervang deze link door de URL van je portfolio zodra die online staat -->
   <a class="back" href="https://sempater.dev/">Sem Pater</a>
 
   <header class="intro">
-    <h1>I backtested 86 trading strategies. Three held up.</h1>
-    <p>Almost every trading strategy you find online comes with a backtest that looks great. I rebuilt them myself in TradingView and Python and tested every one the same way: real fees, no peeking at future data, and rules I wrote down before I saw the result. Most of them fell apart.</p>
+    <h1>I backtested 116 trading strategies. Most fell apart.</h1>
+    <p>Almost every trading strategy you find online comes with a backtest that looks great. I rebuilt them myself in TradingView and Python, later also with machine learning, and tested every one the same way: real fees, no peeking at future data, and rules I wrote down before I saw the result. Most of them fell apart.</p>
+    <p>The one entry that kept working is the gap pullback. On crypto it was profitable every year from 2020 to 2026, including four years it was never built on, and it held up on the Nasdaq too. The Nasdaq version is now in a paper forward test.</p>
     <p>This page shows a selection of what I tested, and the tool I built to check daily risk when several strategies trade on one account.</p>
   </header>
 
@@ -37,6 +37,7 @@
         <li><strong>Real costs.</strong> Exchange fees, overnight fees and slippage are always included. A result without fees doesn't count.</li>
         <li><strong>Rules first.</strong> I wrote down what counts as a pass before running the test, and didn't change settings after seeing the result.</li>
         <li><strong>Enough trades, in both halves.</strong> A result needs a real sample, and it has to hold up in the first and the second half of the data.</li>
+        <li><strong>A holdout.</strong> Newer tests are built on older years and then run once on years they never saw, such as built on 2020–2023 and tested on 2024–2026.</li>
         <li><strong>A second market.</strong> Where possible, the same settings have to work on a symbol the strategy wasn't picked on.</li>
       </ul>
     </section>
@@ -46,7 +47,7 @@
         <h2>Twelve of the results</h2>
         <div class="filters" id="filters" role="group" aria-label="Show results by verdict"></div>
       </div>
-      <p class="note">Each row is drawn like a candle. The solid body is the profit factor after costs (everything won divided by everything lost), measured from 1.0: green makes money, red loses it. A thin wick shows what the strategy claimed. The dashed line at 1.3 is the bar a strategy had to clear. Click a row for the details.</p>
+      <p class="note">Each row is drawn like a candle. The solid body is the profit factor after costs (everything won divided by everything lost), measured from 1.0: green makes money, red loses it. A thin wick shows what the strategy claimed. The dashed line at 1.3 is the usual bar to pass; the 6-year retest instead checked whether a result held up, year after year, on data it had never seen. Click a row for the details.</p>
       <div class="results" id="results"></div>
     </section>
 
@@ -160,10 +161,10 @@
   </div>
 
   <footer class="footer">
-    <p>Backtests on historical data from Binance (crypto) and HistData (Nasdaq-100), mostly 2024 to 2026 unless noted. This is a research project, not financial advice.</p>
+    <p>Backtests on historical data from Binance (crypto) and HistData (Nasdaq-100 and S&amp;P 500), 2018 to 2026 depending on the test. This is a research project, not financial advice.</p>
   </footer>
 
 </div>
-<script src="script.js?v=4"></script>
+<script src="script.js?v=6"></script>
 </body>
 </html>

@@ -33,7 +33,7 @@
 
 
 // ---------- Scorecard ----------
-// A selection from the full scorecard (86 strategies). No dollar amounts on purpose.
+// A selection from the full scorecard (116 tests). No dollar amounts on purpose.
 
 (function () {
   "use strict";
@@ -74,6 +74,24 @@
       why: "Passed a check I wrote down before running it. The edge is real but mostly comes from bull markets."
     },
     {
+      name: "Nasdaq 15-minute gap pullback (gap CE)",
+      pf: 1.46, claimed: null, pfLabel: "PF 1.46 (holdout)",
+      market: "Nasdaq-100 with MNQ futures rules, 2018–2026",
+      claim: "The crypto gap pullback moved to 15-minute Nasdaq candles: setups only 03:00–16:00 New York, flat by 16:45.",
+      result: "PF 1.39 on 2018–2023 and 1.46 on the 2024–2026 holdout, 9 of 9 years positive, about 3 trades a day. Fills checked on 1-minute bars, one tick worse than the price.",
+      verdict: "pass",
+      why: "The best futures result so far, now in a paper forward test before any real money. The data is an index CFD, so real fills may be a little worse."
+    },
+    {
+      name: "4-hour gap pullback (gap CE), 6-year retest",
+      pf: 1.28, claimed: null, pfLabel: "PF 1.28",
+      market: "SOL, XRP and BTC, 15 min, 2020–2026",
+      claim: "Buy the pullback to the middle of a 4-hour price gap, 2R target. First found on 2024–2026 data, where it was positive on 10 of 11 coins.",
+      result: "Rerun unchanged on 2020–2024, data never used to build it: PF 1.28 on 2,281 trades, profitable every year from 2020 to 2026. Best on SOL (PF 1.40).",
+      verdict: "pass",
+      why: "Confirmed on four years it had never seen. The one entry that keeps working, on crypto and on the Nasdaq."
+    },
+    {
       name: "Community strategy with PF 20",
       pf: null, claimed: 20.4, pfLabel: "claimed 20.4",
       market: "XRP, 15 min",
@@ -83,13 +101,13 @@
       why: "The code requested a higher-timeframe candle's close before that candle had finished. Combined with zero fees, that produced a too-good-to-be-true result."
     },
     {
-      name: "Opening range breakout, replicated",
-      pf: 1.13, claimed: 1.50, pfLabel: "PF 1.13 (SOL)",
+      name: "Opening range breakout, replicated and retested",
+      pf: 0.93, claimed: 1.5, pfLabel: "PF 0.93 (6 yrs)",
       market: "SOL and XRP, 15 min",
       claim: "TradingView backtest on SOL: PF 1.50, 20 of 21 months positive.",
-      result: "Line-for-line Python port with real costs: SOL PF 1.13, XRP PF 1.01.",
+      result: "Line-for-line Python port with real costs: SOL PF 1.13, XRP 1.01. On the 6-year retest: PF 0.93, profitable in 1 of 5 years.",
       verdict: "fail",
-      why: "The TradingView number had zero commission. Rebuilding it independently showed how much fees and data details matter."
+      why: "The TradingView number had zero commission. Rebuilt with real costs and run on six years of data, the edge was gone, so I dropped it."
     },
     {
       name: "Initial balance fade",
@@ -101,15 +119,6 @@
       why: "An earlier promising result was caused by a one-hour timezone bug in summer data (daylight saving time). Fixing the bug removed the edge."
     },
     {
-      name: "4-hour fair value gap pullback",
-      pf: 1.26, claimed: null, pfLabel: "PF 1.22–1.28",
-      market: "11 crypto coins, 15 min",
-      claim: "Buy the pullback to the middle of a 4-hour price gap, 2R target.",
-      result: "PF 1.22–1.28, positive on 10 of 11 coins, both halves positive on SOL, XRP and BTC.",
-      verdict: "noedge",
-      why: "The most consistent short-term result, but just under the 1.3 bar. Good candidate for a forward test, not for trading yet."
-    },
-    {
       name: "Squeeze Momentum (LazyBear)",
       pf: 0.61, claimed: null, pfLabel: "PF 0.61",
       market: "XRP, 15 min",
@@ -119,31 +128,22 @@
       why: "Squeeze releases did worse than random. Popularity says nothing about performance."
     },
     {
-      name: "ICT order block retest",
-      pf: 0.68, claimed: null, pfLabel: "PF 0.68",
-      market: "XRP, 15 min",
-      claim: "After a break of structure, price returns to the last opposite candle and bounces.",
-      result: "PF 0.68 on 2,686 trades. 33.3% win rate, exactly breakeven for a 2R target before fees.",
+      name: "Pre-Fed drift",
+      pf: 0.78, claimed: 2.17, pfLabel: "PF 0.78 (holdout)",
+      market: "SOL, XRP and BTC, 53 Fed meetings, 2020–2026",
+      claim: "Go long for the 24 hours before a Fed announcement. On 2020–2023 it made PF 2.17.",
+      result: "On the 2024–2026 holdout: PF 0.78.",
       verdict: "fail",
-      why: "A coin flip before costs. Tight stops meant fees took about 24% of each trade's risk."
+      why: "A known stock-market effect that looked strong on older crypto data and disappeared on newer years. This is why nothing goes live without a holdout."
     },
     {
-      name: "CME gap fill",
-      pf: 1.02, claimed: null, pfLabel: "PF 1.02",
-      market: "11 crypto coins, 15 min",
-      claim: "Weekend gaps against the CME Friday close always get filled.",
-      result: "Gaps filled within a week only 48% of the time, on BTC only 36%. PF 1.02.",
+      name: "Machine learning with crowd-positioning data",
+      pf: 0.90, claimed: 1.06, pfLabel: "PF 0.90",
+      market: "BTC, ETH, SOL and XRP, 4 hours ahead",
+      claim: "My own first run: adding open interest and long/short ratios to the model gave PF 1.28 before costs, 1.06 after.",
+      result: "Retrained every month on past data only, 19 test months. With a 10-minute data delay: PF 0.90 after costs, 0 of 4 coins profitable.",
       verdict: "fail",
-      why: "A popular belief that turned out to be a coin flip, and weakest on BTC, where it's talked about most."
-    },
-    {
-      name: "Supertrend (10, 3)",
-      pf: 0.79, claimed: null, pfLabel: "PF 0.79 (XRP)",
-      market: "XRP and SOL, 15 min",
-      claim: "Always-in trend follower that flips on each signal.",
-      result: "PF 1.05–1.06 before fees on both coins, 0.79–0.87 after.",
-      verdict: "fail",
-      why: "The only classic indicator with a real raw edge, but about 0.05% per trade can't cover a 0.12% round-trip fee."
+      why: "The model had been seeing positioning data about five minutes before it was actually published. Once it only used data that was really available, it did no better than price alone."
     },
     {
       name: "Keltner snapback (\"rubber band\")",
@@ -157,12 +157,12 @@
   ];
 
   var LESSONS = [
-    { title: "Too-good results are usually lookahead.", text: "A profit factor of 20 came from one line of code that read a candle's close before it happened." },
+    { title: "Go with the move; fading loses.", text: "Fading stretched moves failed on crypto, gold and the Nasdaq, from 1-minute to daily charts." },
+    { title: "The gap is the one entry that keeps working.", text: "4-hour gaps on crypto were profitable every year from 2020 to 2026, and 15-minute to 1-hour gaps worked on the Nasdaq. Pullbacks to other levels did not." },
+    { title: "A holdout kills most finds.", text: "Three ideas that looked real on 2020–2023 failed on 2024–2026. Nothing goes live without one." },
+    { title: "A few minutes of future data fakes an edge.", text: "A profit factor of 20 came from reading a candle's close too early, and a 5-minute timestamp leak made a losing model look profitable." },
     { title: "Zero-fee backtests mislead.", text: "Several strategies had a small real edge before costs that fees completely erased." },
-    { title: "Rebuild it to trust it.", text: "Porting a strategy line for line to Python, with real costs, gave a very different answer than the original backtest." },
-    { title: "Bugs can look like an edge.", text: "A one-hour timezone error in summer data created a result that disappeared once it was fixed." },
-    { title: "Popularity doesn't predict performance.", text: "The three most-liked TradingView scripts I tested all failed honestly." },
-    { title: "Removing bad trades afterwards proves nothing.", text: "Results that only look good after dropping the losers were chosen by their outcome, not by a rule." }
+    { title: "Filters and clever sizing didn't beat the plain rules.", text: "A quality checklist, trend filters, a machine-learning trade filter and sizing down after losses all failed. Take every signal at one size." }
   ];
 
 
